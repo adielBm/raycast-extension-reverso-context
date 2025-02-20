@@ -361,7 +361,8 @@
   "dependencies": {
     "@raycast/api": "^1.39.3",
     "axios": "^0.21.1",
-    "languagedetect": "^2.0.0"
+    "languagedetect": "^2.0.0",
+    "puppeteer": "^24.2.1"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^5.0.0",

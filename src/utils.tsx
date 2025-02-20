@@ -4,7 +4,6 @@ import { getAlphabet } from "./alphabet";
 const lngDetector = new LanguageDetect();
 lngDetector.setLanguageType("iso2");
 
-export const reversoQuery = "https://context.reverso.net/bst-query-service";
 export const reversoBrowserQuery = "https://context.reverso.net/translation";
 const tTextRx = /<em>(.*?)<\/em>/g;
 export const codeToLanguageDict: Record<LangCode, string> = {
