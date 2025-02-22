@@ -1,7 +1,7 @@
-import { ActionPanel, List, Action, showToast, Toast, Icon, showHUD } from "@raycast/api";
+import { ActionPanel, List, Action, showToast, Toast, Icon, showHUD, Color } from "@raycast/api";
 import { useEffect, useState } from "react";
-import { Preferences, UsageExample } from "./domain";
-import { getUsageExamples } from "./reversoApi";
+import { Preferences, UsageExample, Translation } from "./domain";
+import { getContexts } from "./reversoApi";
 import {
   buildDetails,
   clarifyLangPairDirection,
@@ -13,16 +13,48 @@ import {
 
 let count = 0;
 
-export default function CommandBase(getPreferencesFunc: () => Preferences) {
 
-  showHUD("Hey there 👋");
+// color of tags based on their pos. return array of tags with their color
+const translationsToAccsesotyTags = (translations: Translation[]) => {
+  let accessories = [];
+  for (let i = 0; i < translations.length; i++) {
+    let color;
+    switch (translations[i].pos) {
+      case "n":
+      color = Color.Blue;
+      break;
+      case "v":
+      color = Color.Green
+      break;
+      case "adj":
+      color = Color.Yellow;
+      break;
+      case "adv":
+      color = Color.Orange;
+      break;
+      default:
+      color = Color.SecondaryText;
+      break;
+    }
+    accessories.push({
+      tag: {
+        value: translations[i].translation,
+        color: color,
+      }
+    });
+  }
+  return accessories;
+}
+
+
+export default function CommandBase(getPreferencesFunc: () => Preferences) {
 
   const [isLoading, setIsLoading] = useState(false);
   const [text, setText] = useState("");
   const [examples, setExamples] = useState<UsageExample[]>([]);
   const [isShowingDetail, setIsShowingDetail] = useState(false);
+  const [translations, setTranslations] = useState<Translation[]>([]);
 
-  
   useEffect(() => {
     if (text === "") {
       return;
@@ -42,16 +74,14 @@ export default function CommandBase(getPreferencesFunc: () => Preferences) {
 
     showToast(Toast.Style.Animated, `[${langPair.from} -> ${langPair.to}]`, "Loading...");
 
-    showHUD("Hey there 👋");
-    
-    getUsageExamples(text, langPair.from, langPair.to)
-      .then((examples) => {
+    getContexts(text, langPair.from, langPair.to)
+      .then((contexts) => {
         if (localCount !== count) {
           // If current request is not actual, ignore it.
           return;
         }
-
-        setExamples(examples);
+        setExamples(contexts.examples);
+        setTranslations(contexts.translations);
       })
       .catch((error) => {
         showToast(Toast.Style.Failure, "Could not translate", error);
@@ -70,21 +100,17 @@ export default function CommandBase(getPreferencesFunc: () => Preferences) {
       isShowingDetail={isShowingDetail}
       throttle
     >
+      {translations.length > 0 && <List.Item
+        title=""
+        accessories={translationsToAccsesotyTags(translations)}
+      />}
       {examples.map((e, index) => (
         <List.Item
           key={index}
-          title={e.tText}
-          icon={Icon.Tree}
-      /*     accessories={[
-            {
-              tag: {
-                value: "An Accessory Tag",
-                color: Color.Green,
-              },
-              text: "A Colored Accessory Text",
-              icon: { source: Icon.Hammer, tintColor: Color.Orange },
-            },
-          ]} */
+          accessories={[
+            { text: e.sExample },
+          ]}
+          title={`${e.tText}`}
           detail={<List.Item.Detail markdown={buildDetails(e)} />}
           actions={
             <ActionPanel>
@@ -98,9 +124,8 @@ export default function CommandBase(getPreferencesFunc: () => Preferences) {
                 <Action.OpenInBrowser
                   title="Open in Reverso Context"
                   shortcut={{ modifiers: ["opt"], key: "enter" }}
-                  url={`${reversoBrowserQuery}/${codeToLanguageDict[e.sLang]}-${codeToLanguageDict[e.tLang]}/${
-                    e.sText
-                  }`}
+                  url={`${reversoBrowserQuery}/${codeToLanguageDict[e.sLang]}-${codeToLanguageDict[e.tLang]}/${e.sText
+                    }`}
                 />
               </ActionPanel.Section>
             </ActionPanel>

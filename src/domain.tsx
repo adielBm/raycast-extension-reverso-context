@@ -22,6 +22,11 @@ export interface LangPair {
   to: LangCode;
 }
 
+export interface Translation {
+  translation: string;
+  pos: string;
+}
+
 export interface UsageExample {
   sExample: string;
   tExample: string;
