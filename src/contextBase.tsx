@@ -1,6 +1,6 @@
-import { ActionPanel, List, Action, showToast, Toast, Icon, getPreferenceValues } from "@raycast/api";
+import { ActionPanel, List, Action, showToast, Toast, Icon, showHUD } from "@raycast/api";
 import { useEffect, useState } from "react";
-import { LangCode, Preferences, UsageExample } from "./domain";
+import { Preferences, UsageExample } from "./domain";
 import { getUsageExamples } from "./reversoApi";
 import {
   buildDetails,
@@ -14,11 +14,15 @@ import {
 let count = 0;
 
 export default function CommandBase(getPreferencesFunc: () => Preferences) {
+
+  showHUD("Hey there 👋");
+
   const [isLoading, setIsLoading] = useState(false);
   const [text, setText] = useState("");
   const [examples, setExamples] = useState<UsageExample[]>([]);
   const [isShowingDetail, setIsShowingDetail] = useState(false);
 
+  
   useEffect(() => {
     if (text === "") {
       return;
@@ -38,6 +42,8 @@ export default function CommandBase(getPreferencesFunc: () => Preferences) {
 
     showToast(Toast.Style.Animated, `[${langPair.from} -> ${langPair.to}]`, "Loading...");
 
+    showHUD("Hey there 👋");
+    
     getUsageExamples(text, langPair.from, langPair.to)
       .then((examples) => {
         if (localCount !== count) {
@@ -68,13 +74,23 @@ export default function CommandBase(getPreferencesFunc: () => Preferences) {
         <List.Item
           key={index}
           title={e.tText}
-          accessoryTitle={clearTag(e.tExample)}
+          icon={Icon.Tree}
+      /*     accessories={[
+            {
+              tag: {
+                value: "An Accessory Tag",
+                color: Color.Green,
+              },
+              text: "A Colored Accessory Text",
+              icon: { source: Icon.Hammer, tintColor: Color.Orange },
+            },
+          ]} */
           detail={<List.Item.Detail markdown={buildDetails(e)} />}
           actions={
             <ActionPanel>
               <ActionPanel.Section>
                 <Action
-                  title="Show Full Example And Translation"
+                  title="Show Full Example and Translation"
                   icon={Icon.Text}
                   onAction={() => setIsShowingDetail(!isShowingDetail)}
                 />
