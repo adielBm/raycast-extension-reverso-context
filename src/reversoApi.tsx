@@ -17,7 +17,6 @@ export async function getContexts(text: string, sLang: LangCode, tLang: LangCode
   };
 
   if (!text || !text.endsWith(".")) {
-    showToast(Toast.Style.Failure, "Can't find examples", "Please select a word or a phrase.");
     return contexts;
   }
   // remove the period from the text
@@ -103,7 +102,6 @@ export async function getContexts(text: string, sLang: LangCode, tLang: LangCode
         // reverse the translations array
         // translations = translations.reverse();
         translations = translations.slice(0, 7);
-
         return [examplesArray, translations] as [UsageExample[], Translation[]];
       },
       sLang,
@@ -111,6 +109,9 @@ export async function getContexts(text: string, sLang: LangCode, tLang: LangCode
       text,
     );
 
+    if (browser) {
+      await browser.close();
+    }
     return { examples: contexts[0], translations: contexts[1] };
 
   } catch (err: unknown) {
@@ -118,6 +119,9 @@ export async function getContexts(text: string, sLang: LangCode, tLang: LangCode
       showToast(Toast.Style.Failure, "Can't find examples", err.message);
     } else {
       showToast(Toast.Style.Failure, "Can't find examples", "An unknown error occurred.");
+    }
+    if (browser) {
+      await browser.close();
     }
     return contexts;
   } finally {

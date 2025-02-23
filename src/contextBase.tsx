@@ -21,7 +21,10 @@ const translationsToAccsesotyTags = (translations: Translation[]) => {
     let color;
     switch (translations[i].pos) {
       case "n":
-      color = Color.Blue;
+      color = {
+        light: "#055C9D",
+        dark: "#68BBE3",
+      };
       break;
       case "v":
       color = Color.Green
