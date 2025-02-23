@@ -57,6 +57,8 @@ export default function CommandBase(getPreferencesFunc: () => Preferences) {
   const [examples, setExamples] = useState<UsageExample[]>([]);
   const [isShowingDetail, setIsShowingDetail] = useState(false);
   const [translations, setTranslations] = useState<Translation[]>([]);
+  const [ipa, setIpa] = useState("");
+  const [searchText, setSearchText] = useState("");
 
   useEffect(() => {
     if (text === "") {
@@ -64,7 +66,7 @@ export default function CommandBase(getPreferencesFunc: () => Preferences) {
     }
 
     count++;
-    const localCount = count;
+    const localCount = count;  
 
     setIsLoading(true);
     setExamples([]);
@@ -85,6 +87,8 @@ export default function CommandBase(getPreferencesFunc: () => Preferences) {
         }
         setExamples(contexts.examples);
         setTranslations(contexts.translations);
+        setIpa(contexts.ipa);
+        setSearchText(contexts.searchText);
       })
       .catch((error) => {
         showToast(Toast.Style.Failure, "Could not translate", error);
@@ -104,7 +108,8 @@ export default function CommandBase(getPreferencesFunc: () => Preferences) {
       throttle
     >
       {translations.length > 0 && <List.Item
-        title=""
+        title={searchText}
+        subtitle={ipa}
         accessories={translationsToAccsesotyTags(translations)}
       />}
       {examples.map((e, index) => (

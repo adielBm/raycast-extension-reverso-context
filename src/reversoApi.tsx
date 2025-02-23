@@ -6,6 +6,8 @@ import { codeToLanguageDict } from "./utils";
 interface Contexts {
   examples: UsageExample[];
   translations: Translation[];
+  ipa: string;
+  searchText: string;
 }
 
 export async function getContexts(text: string, sLang: LangCode, tLang: LangCode): Promise<Contexts> {
@@ -14,6 +16,8 @@ export async function getContexts(text: string, sLang: LangCode, tLang: LangCode
   const contexts: Contexts = {
     examples: [],
     translations: [],
+    ipa: "",
+    searchText: "",
   };
 
   if (!text || !text.endsWith(".")) {
@@ -51,7 +55,7 @@ export async function getContexts(text: string, sLang: LangCode, tLang: LangCode
     await page.goto(url, { waitUntil: "domcontentloaded" });
     await page.waitForSelector(".example", { timeout: 60000 });
 
-    const contexts: [UsageExample[], Translation[]] = await page.evaluate(
+    const contexts: [UsageExample[], Translation[], string, string] = await page.evaluate(
       (sLang, tLang, text) => {
         let translations: Translation[] = [];
         const translationElements = document.querySelectorAll(".translation");
@@ -94,6 +98,13 @@ export async function getContexts(text: string, sLang: LangCode, tLang: LangCode
           });
         });
 
+        // get the ipa
+        const ipaElement = document.querySelector(".ipa");
+        const ipa = ipaElement?.textContent?.trim() || "";
+
+        // get the search text
+        const searchTextElement = document.querySelector(".search-text");
+        const searchText = searchTextElement?.textContent?.trim() || "";
         // remove from translations the translations that are not in the examples
         // const translationsFiltered = translations.filter((translation) => {
         //   return examplesArray.some((example) => example.tText === translation.translation);
@@ -102,7 +113,7 @@ export async function getContexts(text: string, sLang: LangCode, tLang: LangCode
         // reverse the translations array
         // translations = translations.reverse();
         translations = translations.slice(0, 7);
-        return [examplesArray, translations] as [UsageExample[], Translation[]];
+        return [examplesArray, translations, ipa, searchText] as [UsageExample[], Translation[], string, string];
       },
       sLang,
       tLang,
@@ -112,7 +123,7 @@ export async function getContexts(text: string, sLang: LangCode, tLang: LangCode
     if (browser) {
       await browser.close();
     }
-    return { examples: contexts[0], translations: contexts[1] };
+    return { examples: contexts[0], translations: contexts[1], ipa: contexts[2], searchText: contexts[3] };
 
   } catch (err: unknown) {
     if (err instanceof Error) {
