@@ -34,8 +34,19 @@ export interface UsageExample {
   tLang: LangCode;
   sText: string;
   tText: string;
-  source: string;
-  sourceUrl: string;
+}
+
+export interface Contexts {
+  examples: UsageExample[];
+  translations: Translation[];
+  ipa: string;
+  searchText: string;
+}
+
+export interface SynonymAntonymCard {
+  pos: string[]; // Part of Speech (like 'adjective', 'verb', 'noun', etc.)
+  matches: string[]; // List of strong matches
+  likableWords: string[]; // List of "likable" words, e.g., ["positive", "outstanding"]
 }
 
 export interface Preferences {
