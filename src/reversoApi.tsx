@@ -1,10 +1,52 @@
 import { showHUD, showToast, Toast } from "@raycast/api";
-import puppeteer from "puppeteer-core";
+import puppeteer, { Browser } from "puppeteer-core";
 import { Contexts, LangCode, SynonymAntonymCard, Translation, UsageExample } from "./domain";
 import { codeToLanguageDict } from "./utils";
 
-export async function getContexts(sText: string, sLang: LangCode, tLang: LangCode): Promise<Contexts> {
-  let browser, page;
+const setupBrowser = async () => {
+  return await puppeteer.launch({
+    executablePath: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    headless: true,
+    args: ["--no-sandbox", "--disable-setuid-sandbox"],
+  });
+};
+
+const setupPage = async (browser: Browser) => {
+  const page = await browser.newPage();
+  await page.setUserAgent(
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
+  );
+  await page.setRequestInterception(true);
+  page.on("request", (request) => {
+    request.continue({
+      headers: {
+        ...request.headers(),
+        "Accept-Language": "en-US,en;q=0.9",
+      },
+    });
+  });
+  return page;
+};
+
+export async function getResults(
+  text: string,
+  sLang: LangCode,
+  tLang: LangCode,
+): Promise<[Contexts, SynonymAntonymCard[]]> {
+  const browser = await setupBrowser();
+  const contexts = await getContexts(text, sLang, tLang, browser);
+  const synonyms = sLang === "en" ? await getSynonyms(text, browser) : [];
+  await browser.close();
+  return [contexts, synonyms];
+}
+
+export async function getContexts(
+  sText: string,
+  sLang: LangCode,
+  tLang: LangCode,
+  browser: Browser,
+): Promise<Contexts> {
+  const page = await setupPage(browser);
 
   const contexts: Contexts = {
     examples: [],
@@ -14,26 +56,6 @@ export async function getContexts(sText: string, sLang: LangCode, tLang: LangCod
   };
 
   try {
-    browser = await puppeteer.launch({
-      executablePath: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-      headless: true,
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
-    });
-    page = await browser.newPage();
-
-    await page.setUserAgent(
-      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
-    );
-    await page.setRequestInterception(true);
-    page.on("request", (request) => {
-      request.continue({
-        headers: {
-          ...request.headers(),
-          "Accept-Language": "en-US,en;q=0.9,he;q=0.8",
-        },
-      });
-    });
-
     const url = `https://context.reverso.net/translation/${codeToLanguageDict[sLang]}-${codeToLanguageDict[tLang]}/${encodeURIComponent(sText)}`;
 
     await page.goto(url, { waitUntil: "domcontentloaded" });
@@ -73,7 +95,7 @@ export async function getContexts(sText: string, sLang: LangCode, tLang: LangCod
             sLang: sLang,
             tLang: tLang,
             sText: sText,
-            tText: tText
+            tText: tText,
           });
         });
 
@@ -84,7 +106,7 @@ export async function getContexts(sText: string, sLang: LangCode, tLang: LangCod
         // get the search text
         const searchTextElement = document.querySelector(".search-text");
         const searchText = searchTextElement?.textContent?.trim() || "";
-   
+
         translations = translations.slice(0, 7);
         return [examplesArray, translations, ipa, searchText] as [UsageExample[], Translation[], string, string];
       },
@@ -92,60 +114,19 @@ export async function getContexts(sText: string, sLang: LangCode, tLang: LangCod
       tLang,
       sText,
     );
-   
-    return { examples: contexts[0], translations: contexts[1], ipa: contexts[2], searchText: contexts[3] };
 
+    return { examples: contexts[0], translations: contexts[1], ipa: contexts[2], searchText: contexts[3] };
   } catch (err: unknown) {
-    if (err instanceof Error) {
-      showToast(Toast.Style.Failure, "Can't find examples", err.message);
-    } else {
-      showToast(Toast.Style.Failure, "Can't find examples", "An unknown error occurred.");
-    }
-    if (page) {
-      await page.close();
-    }
-    if (browser) {
-      await browser.close();
-    }
     return contexts;
   } finally {
-    if (page) {
-      await page.close();
-    }
-    if (browser) {
-      await browser.close();
-    }
+    await page?.close();
   }
 }
 
-
-export async function getSynonyms(word: string): Promise<SynonymAntonymCard[]> {
-  let browser, page;
+export async function getSynonyms(word: string, browser: Browser): Promise<SynonymAntonymCard[]> {
   const synonymsList: SynonymAntonymCard[] = [];
-
+  const page = await setupPage(browser);
   try {
-    browser = await puppeteer.launch({
-      executablePath: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-      headless: true,
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
-    });
-
-    page = await browser.newPage();
-
-    await page.setUserAgent(
-      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
-    );
-
-    await page.setRequestInterception(true);
-    page.on("request", (request) => {
-      request.continue({
-        headers: {
-          ...request.headers(),
-          "Accept-Language": "en-US,en;q=0.9",
-        },
-      });
-    });
-
     const url = `https://www.thesaurus.com/browse/${encodeURIComponent(word)}`;
     await page.goto(url, { waitUntil: "domcontentloaded" });
     // Wait for the synonyms to load
@@ -157,7 +138,7 @@ export async function getSynonyms(word: string): Promise<SynonymAntonymCard[]> {
       elements.forEach((element) => {
         const text = (element as HTMLElement).innerText;
         // Helper function to extract words (for things like "positive, outstanding")
-        const extractWords = (line: string): string[] => line.split(',').map(word => word.trim());
+        const extractWords = (line: string): string[] => line.split(",").map((word) => word.trim());
 
         // Extracting POS (Part of Speech) e.g. "adjective"
         const posMatch = text.match(/(adjective|verb|noun|pronoun|adverb|conjunction|interjection) as in (.+)/);
@@ -167,37 +148,48 @@ export async function getSynonyms(word: string): Promise<SynonymAntonymCard[]> {
         const likableWordsMatch = text.match(/as in (.+)/);
         const likableWords = likableWordsMatch ? extractWords(likableWordsMatch[1]) : ["unknown"];
 
-
         // Extracting Strong Matches (from the "Strong matches" section)
-        const strongesMatchesIndex = text.indexOf('Strongest matches');
-        const strongMatchesIndex = text.indexOf('Strong matches');
-        const weakMatchesIndex = text.indexOf('Weak matches');
+        const strongesMatchesIndex = text.indexOf("Strongest matches");
+        const strongMatchesIndex = text.indexOf("Strong matches");
+        const weakMatchesIndex = text.indexOf("Weak matches");
 
         let matches: string[] = [];
 
         // Get the substring containing the strong matches
         if (strongesMatchesIndex !== -1 && strongMatchesIndex !== -1) {
           const strongesMatchesText = text.substring(strongesMatchesIndex, strongMatchesIndex).trim();
-          const strongesMatches = strongesMatchesText.replace('Strongest matches', '').trim().split('\n').map(word => word.trim()) || ["unknown"];
+          const strongesMatches = strongesMatchesText
+            .replace("Strongest matches", "")
+            .trim()
+            .split("\n")
+            .map((word) => word.trim()) || ["unknown"];
           matches = [...matches, ...strongesMatches];
         }
 
         if (strongMatchesIndex !== -1 && weakMatchesIndex !== -1) {
           const strongMatchesText = text.substring(strongMatchesIndex, weakMatchesIndex).trim();
-          const strongMatches = strongMatchesText.replace('Strong matches', '').trim().split('\n').map(word => word.trim()) || ["unknown"];
+          const strongMatches = strongMatchesText
+            .replace("Strong matches", "")
+            .trim()
+            .split("\n")
+            .map((word) => word.trim()) || ["unknown"];
           matches = [...matches, ...strongMatches];
         }
 
         if (strongesMatchesIndex !== -1 && weakMatchesIndex !== -1) {
           const weakMatchesText = text.substring(weakMatchesIndex).trim();
-          const weakMatches = weakMatchesText.replace('Weak matches', '').trim().split('\n').map(word => word.trim()) || ["unknown"];
+          const weakMatches = weakMatchesText
+            .replace("Weak matches", "")
+            .trim()
+            .split("\n")
+            .map((word) => word.trim()) || ["unknown"];
           matches = [...matches, ...weakMatches];
         }
 
         // Remove empty strings
-        matches = matches.filter(match => match !== '');
+        matches = matches.filter((match) => match !== "");
         // Remove `,` from the strings
-        matches = matches.map(match => match.replace(',', ''));
+        matches = matches.map((match) => match.replace(",", ""));
         // Remove duplicates
         matches = Array.from(new Set(matches));
 
@@ -210,23 +202,10 @@ export async function getSynonyms(word: string): Promise<SynonymAntonymCard[]> {
 
       return cards;
     });
-    
     return results;
-
   } catch (err: unknown) {
-    if (err instanceof Error) {
-      synonymsList.push();
-    } else {
-      showToast(Toast.Style.Failure, "Can't find synonyms", "An unknown error occurred.");
-    }
-    
     return synonymsList;
   } finally {
-    if (page) {
-      await page.close();
-    }
-    if (browser) {
-      await browser.close();
-    }
+    await page?.close();
   }
 }

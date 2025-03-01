@@ -73,10 +73,9 @@ export function clarifyLangPairDirection(text: string, langPair: LangPair): [Lan
   return [updatedLangPair, text];
 }
 
-
 // color of tags based on their pos. return array of tags with their color
 export const translationsToAccsesotyTags = (translations: Translation[]) => {
-  let accessories = [];
+  const accessories = [];
   for (let i = 0; i < translations.length; i++) {
     let color;
     switch (translations[i].pos) {
@@ -84,7 +83,7 @@ export const translationsToAccsesotyTags = (translations: Translation[]) => {
         color = Color.Blue;
         break;
       case "v":
-        color = Color.Green
+        color = Color.Green;
         break;
       case "adj":
         color = Color.Yellow;
@@ -100,8 +99,8 @@ export const translationsToAccsesotyTags = (translations: Translation[]) => {
       tag: {
         value: translations[i].translation,
         color: color,
-      }
+      },
     });
   }
   return accessories;
-}
+};
