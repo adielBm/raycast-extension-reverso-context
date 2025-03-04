@@ -3,7 +3,7 @@ import puppeteer, { Browser } from "puppeteer-core";
 import { Contexts, LangCode, SynonymAntonymCard, Translation, UsageExample } from "./domain";
 import { codeToLanguageDict } from "./utils";
 
-const setupBrowser = async () => {
+export const setupBrowser = async () => {
   return await puppeteer.launch({
     executablePath: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
     headless: true,
@@ -11,7 +11,7 @@ const setupBrowser = async () => {
   });
 };
 
-const setupPage = async (browser: Browser) => {
+export const setupPage = async (browser: Browser) => {
   const page = await browser.newPage();
   await page.setUserAgent(
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
@@ -28,7 +28,7 @@ const setupPage = async (browser: Browser) => {
   return page;
 };
 
-export async function getResults(
+export default async function getResults(
   text: string,
   sLang: LangCode,
   tLang: LangCode,
@@ -107,7 +107,6 @@ export async function getContexts(
         const searchTextElement = document.querySelector(".search-text");
         const searchText = searchTextElement?.textContent?.trim() || "";
 
-        translations = translations.slice(0, 7);
         return [examplesArray, translations, ipa, searchText] as [UsageExample[], Translation[], string, string];
       },
       sLang,

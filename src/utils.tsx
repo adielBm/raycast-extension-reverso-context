@@ -39,7 +39,7 @@ function fitsToAlphabet(text: string, language: LangCode): boolean {
 }
 
 export function clarifyLangPairDirection(text: string, langPair: LangPair): [LangPair, string] {
-  const langPattern = /^([a-z]{2})?>?([a-z]{2})?\s/;
+  const langPattern = /^([a-z]{2})?>([a-z]{2})?\s/;
   const match = text.match(langPattern);
   let updatedLangPair = langPair;
 
@@ -73,27 +73,43 @@ export function clarifyLangPairDirection(text: string, langPair: LangPair): [Lan
   return [updatedLangPair, text];
 }
 
+export const posToColor: Record<string, Color> = {
+  "n": Color.Blue,
+  "v": Color.Green,
+  "adj": Color.Yellow,
+  "adv": Color.Orange,
+  "": Color.SecondaryText,
+};
+
+export const posToPosName: Record<string, string> = {
+  "n": "Noun",
+  "v": "Verb",
+  "adj": "Adjective",
+  "adv": "Adverb",
+  "": "Unknown",
+};
+
 // color of tags based on their pos. return array of tags with their color
-export const translationsToAccsesotyTags = (translations: Translation[]) => {
+export const translationsToAccsesotyTags = (translations: Translation[], limit: number | boolean): { tag: { value: string; color: string; } }[] => {
+  // slice the translations array such that the sum of characters of all `translations` is greater than `limit`
+  // where also, each item is considered as 3 characters because of the space between them
+
+  if (typeof limit === "number") {
+    let totalChars = 0;
+    let i;
+    for (i = 0; i < translations.length && totalChars < limit; i++) {
+      totalChars += translations[i].translation.length + 3;
+    }
+    translations = translations.slice(0, i);
+  }
+
   const accessories = [];
   for (let i = 0; i < translations.length; i++) {
     let color;
-    switch (translations[i].pos) {
-      case "n":
-        color = Color.Blue;
-        break;
-      case "v":
-        color = Color.Green;
-        break;
-      case "adj":
-        color = Color.Yellow;
-        break;
-      case "adv":
-        color = Color.Orange;
-        break;
-      default:
-        color = Color.SecondaryText;
-        break;
+    if (translations[i].pos in posToColor) {
+      color = posToColor[translations[i].pos];
+    } else {
+      color = Color.SecondaryText;
     }
     accessories.push({
       tag: {
@@ -104,3 +120,23 @@ export const translationsToAccsesotyTags = (translations: Translation[]) => {
   }
   return accessories;
 };
+
+// return array of (pos=string, translations=array of translations, color=color of pos) objects
+export const translationsToMetadataTagList = (translations: Translation[]): { pos: string; translations: Translation[]; color: Color }[] => {
+  const metadataTagList = [];
+  for (const pos of Array.from(new Set(translations.map((t) => t.pos))) as string[]) {
+    const color = pos in posToColor ? posToColor[pos] : Color.SecondaryText;
+    metadataTagList.push({
+      pos: posToPosName[pos],
+      translations: translations.filter((t) => t.pos === pos),
+      color: color,
+    });
+  }
+  // sort by pos name, so that the order is Noun, Verb, Adjective, Adverb
+  metadataTagList.sort((a, b) => {
+    const posA = posToPosName[a.pos] || "Unknown";
+    const posB = posToPosName[b.pos] || "Unknown";
+    return posA.localeCompare(posB);
+  });
+  return metadataTagList;
+}

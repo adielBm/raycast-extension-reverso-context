@@ -2,7 +2,7 @@
   "$schema": "https://www.raycast.com/schemas/extension.json",
   "name": "reverso-context",
   "title": "Reverso Context",
-  "description": "Shows translation with usage examples via Reverso Context",
+  "description": "Get Translations and Examples via Reverso Context",
   "icon": "reverso-context.png",
   "author": "MrModest",
   "categories": [
@@ -12,18 +12,19 @@
   "license": "MIT",
   "commands": [
     {
-      "name": "context",
-      "title": "Translate With The Context",
+      "name": "command",
+      "title": "Translate",
       "subtitle": "Reverso Context",
-      "description": "Shows translation with usage examples via Reverso Context",
-      "mode": "view"
-    },
-    {
-      "name": "context_2nd",
-      "title": "Translate With The Context (2nd Pair)",
-      "subtitle": "Reverso Context",
-      "description": "The same as previous one, but you can set second pair of languages to another shortcut",
-      "mode": "view"
+      "description": "Get Translations, Pronunciation, Synonyms and Examples.",
+      "mode": "view",
+      "arguments": [
+        {
+          "name": "text",
+          "placeholder": "Enter text",
+          "type": "text",
+          "required": true
+        }
+      ]
     }
   ],
   "preferences": [
@@ -119,171 +120,6 @@
       "type": "dropdown",
       "required": true,
       "title": "To language",
-      "default": "en",
-      "description": "To language",
-      "data": [
-        {
-          "title": "🇬🇧 English",
-          "value": "en"
-        },
-        {
-          "title": "🇩🇪 German",
-          "value": "de"
-        },
-        {
-          "title": "🇷🇺 Russian",
-          "value": "ru"
-        },
-        {
-          "title": "🇦🇪 Arabic",
-          "value": "ar"
-        },
-        {
-          "title": "🇪🇸 Spanish",
-          "value": "es"
-        },
-        {
-          "title": "🇫🇷 French",
-          "value": "fr"
-        },
-        {
-          "title": "🇮🇱 Hebrew",
-          "value": "he"
-        },
-        {
-          "title": "🇮🇹 Italian",
-          "value": "it"
-        },
-        {
-          "title": "🇯🇵 Japanese",
-          "value": "ja"
-        },
-        {
-          "title": "🇳🇱 Dutch",
-          "value": "nl"
-        },
-        {
-          "title": "🇵🇱 Polish",
-          "value": "pl"
-        },
-        {
-          "title": "🇵🇹 Portuguese",
-          "value": "pt"
-        },
-        {
-          "title": "🇷🇴 Romanian",
-          "value": "ro"
-        },
-        {
-          "title": "🇸🇪 Swedish",
-          "value": "sv"
-        },
-        {
-          "title": "🇹🇷 Turkish",
-          "value": "tr"
-        },
-        {
-          "title": "🇺🇦 Ukrainian",
-          "value": "uk"
-        },
-        {
-          "title": "🇨🇳 Chinese",
-          "value": "zh"
-        }
-      ]
-    },
-    {
-      "name": "correctLangPairDirection_2nd",
-      "type": "checkbox",
-      "required": false,
-      "title": "Translation direction (2nd pair)",
-      "default": false,
-      "description": "Corrects translation direction based on typed text language",
-      "label": "Auto reverse direction (2nd pair)"
-    },
-    {
-      "name": "langFrom_2nd",
-      "type": "dropdown",
-      "required": false,
-      "title": "From language (2nd pair)",
-      "default": "en",
-      "description": "From language",
-      "data": [
-        {
-          "title": "🇬🇧 English",
-          "value": "en"
-        },
-        {
-          "title": "🇩🇪 German",
-          "value": "de"
-        },
-        {
-          "title": "🇷🇺 Russian",
-          "value": "ru"
-        },
-        {
-          "title": "🇦🇪 Arabic",
-          "value": "ar"
-        },
-        {
-          "title": "🇪🇸 Spanish",
-          "value": "es"
-        },
-        {
-          "title": "🇫🇷 French",
-          "value": "fr"
-        },
-        {
-          "title": "🇮🇱 Hebrew",
-          "value": "he"
-        },
-        {
-          "title": "🇮🇹 Italian",
-          "value": "it"
-        },
-        {
-          "title": "🇯🇵 Japanese",
-          "value": "ja"
-        },
-        {
-          "title": "🇳🇱 Dutch",
-          "value": "nl"
-        },
-        {
-          "title": "🇵🇱 Polish",
-          "value": "pl"
-        },
-        {
-          "title": "🇵🇹 Portuguese",
-          "value": "pt"
-        },
-        {
-          "title": "🇷🇴 Romanian",
-          "value": "ro"
-        },
-        {
-          "title": "🇸🇪 Swedish",
-          "value": "sv"
-        },
-        {
-          "title": "🇹🇷 Turkish",
-          "value": "tr"
-        },
-        {
-          "title": "🇺🇦 Ukrainian",
-          "value": "uk"
-        },
-        {
-          "title": "🇨🇳 Chinese",
-          "value": "zh"
-        }
-      ]
-    },
-    {
-      "name": "langTo_2nd",
-      "type": "dropdown",
-      "required": false,
-      "title": "To language (2nd pair)",
       "default": "en",
       "description": "To language",
       "data": [

@@ -13,29 +13,22 @@ type ExtensionPreferences = {
   /** From language - From language */
   "langFrom": "en" | "de" | "ru" | "ar" | "es" | "fr" | "he" | "it" | "ja" | "nl" | "pl" | "pt" | "ro" | "sv" | "tr" | "uk" | "zh",
   /** To language - To language */
-  "langTo": "en" | "de" | "ru" | "ar" | "es" | "fr" | "he" | "it" | "ja" | "nl" | "pl" | "pt" | "ro" | "sv" | "tr" | "uk" | "zh",
-  /** Translation direction (2nd pair) - Corrects translation direction based on typed text language */
-  "correctLangPairDirection_2nd": boolean,
-  /** From language (2nd pair) - From language */
-  "langFrom_2nd": "en" | "de" | "ru" | "ar" | "es" | "fr" | "he" | "it" | "ja" | "nl" | "pl" | "pt" | "ro" | "sv" | "tr" | "uk" | "zh",
-  /** To language (2nd pair) - To language */
-  "langTo_2nd": "en" | "de" | "ru" | "ar" | "es" | "fr" | "he" | "it" | "ja" | "nl" | "pl" | "pt" | "ro" | "sv" | "tr" | "uk" | "zh"
+  "langTo": "en" | "de" | "ru" | "ar" | "es" | "fr" | "he" | "it" | "ja" | "nl" | "pl" | "pt" | "ro" | "sv" | "tr" | "uk" | "zh"
 }
 
 /** Preferences accessible in all the extension's commands */
 declare type Preferences = ExtensionPreferences
 
 declare namespace Preferences {
-  /** Preferences accessible in the `context` command */
-  export type Context = ExtensionPreferences & {}
-  /** Preferences accessible in the `context_2nd` command */
-  export type Context2Nd = ExtensionPreferences & {}
+  /** Preferences accessible in the `command` command */
+  export type Command = ExtensionPreferences & {}
 }
 
 declare namespace Arguments {
-  /** Arguments passed to the `context` command */
-  export type Context = {}
-  /** Arguments passed to the `context_2nd` command */
-  export type Context2Nd = {}
+  /** Arguments passed to the `command` command */
+  export type Command = {
+  /** Enter text */
+  "text": string
+}
 }
 
