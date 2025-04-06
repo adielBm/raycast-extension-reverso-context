@@ -32,12 +32,12 @@ export default async function getResults(
   text: string,
   sLang: LangCode,
   tLang: LangCode,
-): Promise<[Contexts, SynonymAntonymCard[]]> {
+): Promise<[Contexts/* , SynonymAntonymCard[] */]> {
   const browser = await setupBrowser();
   const contexts = await getContexts(text, sLang, tLang, browser);
-  const synonyms = sLang === "en" ? await getSynonyms(text, browser) : [];
+  // const synonyms = sLang === "en" ? await getSynonyms(text, browser) : [];
   await browser.close();
-  return [contexts, synonyms];
+  return [contexts/* , synonyms */];
 }
 
 export async function getContexts(

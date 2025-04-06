@@ -39,14 +39,14 @@ export default function Command(props: { arguments: { text: string } }) {
       setSynonyms([]);
 
       try {
-        const [contexts, synonyms] = await getResults(cleanedText, langPair.from, langPair.to);
+        const [contexts/* , synonyms */] = await getResults(cleanedText, langPair.from, langPair.to);
         setExamples(contexts.examples);
         setIpa(contexts.ipa);
-        setSynonyms(synonyms);
+        // setSynonyms(synonyms);
         setTranslations(contexts.translations);
         setSearchText(contexts.searchText);
-        setIsLoading(false);
         showToast(Toast.Style.Success, `[${langPair.from} -> ${langPair.to}]`, "Done");
+        setIsLoading(false);
       } catch (error) {
         setIsLoading(false);
         showToast(Toast.Style.Failure, "Error: " + error, String(error));
@@ -104,7 +104,7 @@ export default function Command(props: { arguments: { text: string } }) {
           }
         />
       )}
-      {synonyms.length > 0 && (
+      {/* {synonyms.length > 0 && (
         <List.Section title="Synonyms">
           {synonyms.map((card, index) => (
             <List.Item
@@ -115,7 +115,7 @@ export default function Command(props: { arguments: { text: string } }) {
             />
           ))}
         </List.Section>
-      )}
+      )} */}
       {examples.length > 0 && (
         <List.Section title="Examples">
           {examples.map((e, index) => (
