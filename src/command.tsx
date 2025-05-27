@@ -1,8 +1,14 @@
 import { ActionPanel, List, Action, showToast, Toast, getPreferenceValues, Icon } from "@raycast/api";
 import { useEffect, useState } from "react";
-import { Preferences, UsageExample, Translation, Contexts, AllPreferences } from "./domain";
+import { Preferences, UsageExample, Translation, AllPreferences } from "./domain";
 import getResults from "./results";
-import { clarifyLangPairDirection, clearTag, prefsToLangPair, translationsToAccsesotyTags, translationsToMetadataTagList } from "./utils";
+import {
+  clarifyLangPairDirection,
+  clearTag,
+  prefsToLangPair,
+  translationsToAccsesotyTags,
+  translationsToMetadataTagList,
+} from "./utils";
 
 export default function Command(props: { arguments: { text: string } }) {
   const [examples, setExamples] = useState<UsageExample[]>([]);
@@ -14,19 +20,17 @@ export default function Command(props: { arguments: { text: string } }) {
   const preferences: Preferences = getPreferenceValues<AllPreferences>();
   const [isShowingDetail, setIsShowingDetail] = useState(false);
 
-
   useEffect(() => {
-    let [langPair, cleanedText] = preferences.correctLangPairDirection
+    const [langPair, cleanedTextInitial] = preferences.correctLangPairDirection
       ? clarifyLangPairDirection(text, prefsToLangPair(preferences))
       : [prefsToLangPair(preferences), text];
 
-    cleanedText = cleanedText.trim();
+    let cleanedText = cleanedTextInitial.trim();
     if (cleanedText.length === 0 || !cleanedText.endsWith(".")) {
       return;
     }
 
     cleanedText = cleanedText.slice(0, -1).trim();
-
 
     const fetchData = async () => {
       showToast(Toast.Style.Animated, `[${langPair.from} -> ${langPair.to}]`, "Loading...");
@@ -62,15 +66,18 @@ export default function Command(props: { arguments: { text: string } }) {
       throttle
     >
       {translations.length > 0 && (
-        <List.Item title={searchText} subtitle={ipa} accessories={!isShowingDetail ? translationsToAccsesotyTags(translations, 65 - (searchText.length + ipa.length)) : undefined}
+        <List.Item
+          title={searchText}
+          subtitle={ipa}
+          accessories={
+            !isShowingDetail
+              ? translationsToAccsesotyTags(translations, 65 - (searchText.length + ipa.length))
+              : undefined
+          }
           actions={
             <ActionPanel>
               <ActionPanel.Section>
-                <Action
-                  title="Show Details"
-                  onAction={() => setIsShowingDetail(!isShowingDetail)}
-                  icon={Icon.Info}
-                />
+                <Action title="Show Details" onAction={() => setIsShowingDetail(!isShowingDetail)} icon={Icon.Info} />
               </ActionPanel.Section>
             </ActionPanel>
           }
@@ -80,10 +87,7 @@ export default function Command(props: { arguments: { text: string } }) {
               metadata={
                 <List.Item.Detail.Metadata>
                   {translationsToMetadataTagList(translations).map((tagList, index) => (
-                    <List.Item.Detail.Metadata.TagList
-                      key={index}
-                      title={tagList.pos}
-                    >
+                    <List.Item.Detail.Metadata.TagList key={index} title={tagList.pos}>
                       {tagList.translations.map((t, index) => (
                         <List.Item.Detail.Metadata.TagList.Item
                           key={index}
@@ -91,9 +95,7 @@ export default function Command(props: { arguments: { text: string } }) {
                           color={tagList.color}
                         />
                       ))}
-
                     </List.Item.Detail.Metadata.TagList>
-
                   ))}
                 </List.Item.Detail.Metadata>
               }

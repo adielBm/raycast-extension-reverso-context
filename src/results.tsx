@@ -4,7 +4,6 @@ import { codeToLanguageDict } from "./utils";
 import { getPreferenceValues } from "@raycast/api";
 
 export const setupBrowser = async () => {
-
   // get puppeteerExecutablePath preference from Raycast
   const puppeteerExecutablePath = getPreferenceValues<{ puppeteerExecutablePath: string }>().puppeteerExecutablePath;
   if (!puppeteerExecutablePath) {
@@ -35,11 +34,7 @@ export const setupPage = async (browser: Browser) => {
   return page;
 };
 
-export default async function getResults(
-  text: string,
-  sLang: LangCode,
-  tLang: LangCode,
-): Promise<[Contexts]> {
+export default async function getResults(text: string, sLang: LangCode, tLang: LangCode): Promise<[Contexts]> {
   const browser = await setupBrowser();
   const contexts = await getContexts(text, sLang, tLang, browser);
   await browser.close();
@@ -69,7 +64,7 @@ export async function getContexts(
 
     const contexts: [UsageExample[], Translation[], string, string] = await page.evaluate(
       (sLang, tLang, sText) => {
-        let translations: Translation[] = [];
+        const translations: Translation[] = [];
         const translationElements = document.querySelectorAll(".translation");
         translationElements.forEach((element) => {
           const translation = element.getAttribute("data-term") || "";
@@ -127,4 +122,3 @@ export async function getContexts(
     await page?.close();
   }
 }
-

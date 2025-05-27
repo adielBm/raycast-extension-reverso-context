@@ -74,23 +74,26 @@ export function clarifyLangPairDirection(text: string, langPair: LangPair): [Lan
 }
 
 export const posToColor: Record<string, Color> = {
-  "n": Color.Blue,
-  "v": Color.Green,
-  "adj": Color.Yellow,
-  "adv": Color.Orange,
+  n: Color.Blue,
+  v: Color.Green,
+  adj: Color.Yellow,
+  adv: Color.Orange,
   "": Color.SecondaryText,
 };
 
 export const posToPosName: Record<string, string> = {
-  "n": "Noun",
-  "v": "Verb",
-  "adj": "Adjective",
-  "adv": "Adverb",
+  n: "Noun",
+  v: "Verb",
+  adj: "Adjective",
+  adv: "Adverb",
   "": "Unknown",
 };
 
 // color of tags based on their pos. return array of tags with their color
-export const translationsToAccsesotyTags = (translations: Translation[], limit: number | boolean): { tag: { value: string; color: string; } }[] => {
+export const translationsToAccsesotyTags = (
+  translations: Translation[],
+  limit: number | boolean,
+): { tag: { value: string; color: string } }[] => {
   // slice the translations array such that the sum of characters of all `translations` is greater than `limit`
   // where also, each item is considered as 3 characters because of the space between them
 
@@ -122,7 +125,9 @@ export const translationsToAccsesotyTags = (translations: Translation[], limit: 
 };
 
 // return array of (pos=string, translations=array of translations, color=color of pos) objects
-export const translationsToMetadataTagList = (translations: Translation[]): { pos: string; translations: Translation[]; color: Color }[] => {
+export const translationsToMetadataTagList = (
+  translations: Translation[],
+): { pos: string; translations: Translation[]; color: Color }[] => {
   const metadataTagList = [];
   for (const pos of Array.from(new Set(translations.map((t) => t.pos))) as string[]) {
     const color = pos in posToColor ? posToColor[pos] : Color.SecondaryText;
@@ -139,4 +144,4 @@ export const translationsToMetadataTagList = (translations: Translation[]): { po
     return posA.localeCompare(posB);
   });
   return metadataTagList;
-}
+};
