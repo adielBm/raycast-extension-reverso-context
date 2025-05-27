@@ -1,11 +1,18 @@
-import { showHUD, showToast, Toast } from "@raycast/api";
 import puppeteer, { Browser } from "puppeteer-core";
-import { Contexts, LangCode, SynonymAntonymCard, Translation, UsageExample } from "./domain";
+import { Contexts, LangCode, Translation, UsageExample } from "./domain";
 import { codeToLanguageDict } from "./utils";
+import { getPreferenceValues } from "@raycast/api";
 
 export const setupBrowser = async () => {
+
+  // get puppeteerExecutablePath preference from Raycast
+  const puppeteerExecutablePath = getPreferenceValues<{ puppeteerExecutablePath: string }>().puppeteerExecutablePath;
+  if (!puppeteerExecutablePath) {
+    throw new Error("Puppeteer executable path is not set in preferences.");
+  }
+
   return await puppeteer.launch({
-    executablePath: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    executablePath: puppeteerExecutablePath,
     headless: true,
     args: ["--no-sandbox", "--disable-setuid-sandbox"],
   });
@@ -32,12 +39,11 @@ export default async function getResults(
   text: string,
   sLang: LangCode,
   tLang: LangCode,
-): Promise<[Contexts/* , SynonymAntonymCard[] */]> {
+): Promise<[Contexts]> {
   const browser = await setupBrowser();
   const contexts = await getContexts(text, sLang, tLang, browser);
-  // const synonyms = sLang === "en" ? await getSynonyms(text, browser) : [];
   await browser.close();
-  return [contexts/* , synonyms */];
+  return [contexts];
 }
 
 export async function getContexts(
@@ -122,89 +128,3 @@ export async function getContexts(
   }
 }
 
-export async function getSynonyms(word: string, browser: Browser): Promise<SynonymAntonymCard[]> {
-  const synonymsList: SynonymAntonymCard[] = [];
-  const page = await setupPage(browser);
-  try {
-    const url = `https://www.thesaurus.com/browse/${encodeURIComponent(word)}`;
-    await page.goto(url, { waitUntil: "domcontentloaded" });
-    // Wait for the synonyms to load
-    await page.waitForSelector('section[data-type="synonym-antonym-module"]', { timeout: 8000 });
-    const results = await page.evaluate(() => {
-      const elements = document.querySelectorAll('[data-type="synonym-and-antonym-card"]');
-      const cards: SynonymAntonymCard[] = [];
-
-      elements.forEach((element) => {
-        const text = (element as HTMLElement).innerText;
-        // Helper function to extract words (for things like "positive, outstanding")
-        const extractWords = (line: string): string[] => line.split(",").map((word) => word.trim());
-
-        // Extracting POS (Part of Speech) e.g. "adjective"
-        const posMatch = text.match(/(adjective|verb|noun|pronoun|adverb|conjunction|interjection) as in (.+)/);
-        const pos = posMatch ? [posMatch[1]] : ["unknown"];
-
-        // Extracting "likable words" (like "positive, outstanding")
-        const likableWordsMatch = text.match(/as in (.+)/);
-        const likableWords = likableWordsMatch ? extractWords(likableWordsMatch[1]) : ["unknown"];
-
-        // Extracting Strong Matches (from the "Strong matches" section)
-        const strongesMatchesIndex = text.indexOf("Strongest matches");
-        const strongMatchesIndex = text.indexOf("Strong matches");
-        const weakMatchesIndex = text.indexOf("Weak matches");
-
-        let matches: string[] = [];
-
-        // Get the substring containing the strong matches
-        if (strongesMatchesIndex !== -1 && strongMatchesIndex !== -1) {
-          const strongesMatchesText = text.substring(strongesMatchesIndex, strongMatchesIndex).trim();
-          const strongesMatches = strongesMatchesText
-            .replace("Strongest matches", "")
-            .trim()
-            .split("\n")
-            .map((word) => word.trim()) || ["unknown"];
-          matches = [...matches, ...strongesMatches];
-        }
-
-        if (strongMatchesIndex !== -1 && weakMatchesIndex !== -1) {
-          const strongMatchesText = text.substring(strongMatchesIndex, weakMatchesIndex).trim();
-          const strongMatches = strongMatchesText
-            .replace("Strong matches", "")
-            .trim()
-            .split("\n")
-            .map((word) => word.trim()) || ["unknown"];
-          matches = [...matches, ...strongMatches];
-        }
-
-        if (strongesMatchesIndex !== -1 && weakMatchesIndex !== -1) {
-          const weakMatchesText = text.substring(weakMatchesIndex).trim();
-          const weakMatches = weakMatchesText
-            .replace("Weak matches", "")
-            .trim()
-            .split("\n")
-            .map((word) => word.trim()) || ["unknown"];
-          matches = [...matches, ...weakMatches];
-        }
-
-        // Remove empty strings
-        matches = matches.filter((match) => match !== "");
-        // Remove `,` from the strings
-        matches = matches.map((match) => match.replace(",", ""));
-        // Remove duplicates
-        matches = Array.from(new Set(matches));
-
-        cards.push({
-          pos, // Part of Speech (e.g. ['adjective', 'verb'])
-          matches, // Array of strong matches
-          likableWords, // Array of words like 'positive', 'outstanding'
-        });
-      });
-
-      return cards;
-    });
-    return results;
-  } catch (err: unknown) {
-    return synonymsList;
-  } finally {
-    await page?.close();
-  }
-}

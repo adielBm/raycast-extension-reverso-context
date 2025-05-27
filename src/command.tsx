@@ -1,6 +1,6 @@
 import { ActionPanel, List, Action, showToast, Toast, getPreferenceValues, Icon } from "@raycast/api";
 import { useEffect, useState } from "react";
-import { Preferences, UsageExample, Translation, SynonymAntonymCard, Contexts, AllPreferences } from "./domain";
+import { Preferences, UsageExample, Translation, Contexts, AllPreferences } from "./domain";
 import getResults from "./results";
 import { clarifyLangPairDirection, clearTag, prefsToLangPair, translationsToAccsesotyTags, translationsToMetadataTagList } from "./utils";
 
@@ -9,7 +9,6 @@ export default function Command(props: { arguments: { text: string } }) {
   const [translations, setTranslations] = useState<Translation[]>([]);
   const [ipa, setIpa] = useState("");
   const [searchText, setSearchText] = useState("");
-  const [synonyms, setSynonyms] = useState<SynonymAntonymCard[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [text, setText] = useState(props.arguments.text + ".");
   const preferences: Preferences = getPreferenceValues<AllPreferences>();
@@ -36,13 +35,11 @@ export default function Command(props: { arguments: { text: string } }) {
       setTranslations([]);
       setIpa("");
       setSearchText("");
-      setSynonyms([]);
 
       try {
-        const [contexts/* , synonyms */] = await getResults(cleanedText, langPair.from, langPair.to);
+        const [contexts] = await getResults(cleanedText, langPair.from, langPair.to);
         setExamples(contexts.examples);
         setIpa(contexts.ipa);
-        // setSynonyms(synonyms);
         setTranslations(contexts.translations);
         setSearchText(contexts.searchText);
         showToast(Toast.Style.Success, `[${langPair.from} -> ${langPair.to}]`, "Done");
@@ -104,18 +101,6 @@ export default function Command(props: { arguments: { text: string } }) {
           }
         />
       )}
-      {/* {synonyms.length > 0 && (
-        <List.Section title="Synonyms">
-          {synonyms.map((card, index) => (
-            <List.Item
-              key={index}
-              title={card.pos.join(", ")}
-              accessories={[{ text: card.matches.slice(0, 7).join(", ") }]}
-              subtitle={card.likableWords.join(", ")}
-            />
-          ))}
-        </List.Section>
-      )} */}
       {examples.length > 0 && (
         <List.Section title="Examples">
           {examples.map((e, index) => (

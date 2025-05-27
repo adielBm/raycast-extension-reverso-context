@@ -12,7 +12,6 @@ I forked the original due to https://github.com/raycast/extensions/issues/17164.
 - Translations
 - IPA pronunciation
 - Examples
-- Synonyms (from thesaurus.com, english only)
 
 ### Usage
 
@@ -20,3 +19,5 @@ I forked the original due to https://github.com/raycast/extensions/issues/17164.
 - `>es home` will translate "home" from default language to Spanish.
 - `fr> maison` will translate "maison" from French to default language.
 - `en>it home` will translate "house" from English to Italian.
+
+> after typing the query in the input field, you can press `Enter` to get the results. inside the results list, you have to add `.` to the end of the query to get the results.

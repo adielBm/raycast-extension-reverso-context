@@ -13,7 +13,9 @@ type ExtensionPreferences = {
   /** From language - From language */
   "langFrom": "en" | "de" | "ru" | "ar" | "es" | "fr" | "he" | "it" | "ja" | "nl" | "pl" | "pt" | "ro" | "sv" | "tr" | "uk" | "zh",
   /** To language - To language */
-  "langTo": "en" | "de" | "ru" | "ar" | "es" | "fr" | "he" | "it" | "ja" | "nl" | "pl" | "pt" | "ro" | "sv" | "tr" | "uk" | "zh"
+  "langTo": "en" | "de" | "ru" | "ar" | "es" | "fr" | "he" | "it" | "ja" | "nl" | "pl" | "pt" | "ro" | "sv" | "tr" | "uk" | "zh",
+  /** Puppeteer Executable Path - Executable path of your browser for Puppeteer. */
+  "puppeteerExecutablePath": string
 }
 
 /** Preferences accessible in all the extension's commands */

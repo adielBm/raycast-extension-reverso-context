@@ -15,7 +15,7 @@
       "name": "command",
       "title": "Translate",
       "subtitle": "Reverso Context",
-      "description": "Get Translations, Pronunciation, Synonyms and Examples.",
+      "description": "Get Translations, Pronunciation and Examples.",
       "mode": "view",
       "arguments": [
         {
@@ -192,6 +192,14 @@
           "value": "zh"
         }
       ]
+    },
+    {
+      "name": "puppeteerExecutablePath",
+      "type": "textfield",
+      "required": true,
+      "title": "Puppeteer Executable Path",
+      "default": "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+      "description": "Executable path of your browser for Puppeteer."
     }
   ],
   "dependencies": {
