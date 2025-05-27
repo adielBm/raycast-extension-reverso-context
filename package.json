@@ -5,6 +5,9 @@
   "description": "Get Translations and Examples via Reverso Context",
   "icon": "reverso-context.png",
   "author": "MrModest",
+    "contributors": [
+    "adielbm"
+  ],
   "categories": [
     "Web",
     "Productivity"
